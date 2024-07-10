@@ -14,7 +14,7 @@ class ba_mk:
         if credential:
             self.enctoken=credential["ENCTOKEN"]
         else: raise Exception("Credential not found!")
-        # self.enctoken="4svpxb94wxhkMePp/OXcsuAe1/yiQkXmEnFeL4suesowfsCz4+NRBZKEGX2Bu4eVYbShW9tUe7Aup/TUPcZTJrR0+K4xpuArY8kdUyark/CO0jpn17maRA=="
+        # self.enctoken=""
         self.kiteApp = ba_ka(api_key=api_key,userid=user_id,enctoken=self.enctoken)
 
     def get_ltp(self,inNames:list)->dict:
