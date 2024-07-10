@@ -1,0 +1,158 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+#db-names-ls {
+    background-color: #f5f5f5;
+    padding: 20px;
+    border-radius: 4px;
+}
+
+#db-names-ls h2 {
+    margin-top: 0;
+}
+
+#db-names-ls ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+#db-names-ls ul li {
+    margin-bottom: 10px;
+}
+
+#db-names-ls ul li a {
+    display: block;
+    padding: 10px;
+    background-color: #fff;
+    color: #333;
+    text-decoration: none;
+    border-radius: 4px;
+    transition: background-color 0.3s ease;
+}
+
+#db-names-ls ul li a:hover {
+    background-color: #e0e0e0;
+}
+
+#table-ls {
+    margin-top: 20px;
+}
+
+#table-ls h2 {
+    margin-top: 0;
+}
+
+#table-ls ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+#table-ls ul li {
+    margin-bottom: 10px;
+}
+
+#table-ls ul li a {
+    display: block;
+    padding: 10px;
+    background-color: #fff;
+    color: #333;
+    text-decoration: none;
+    border-radius: 4px;
+    transition: background-color 0.3s ease;
+}
+
+#table-ls ul li a:hover {
+    background-color: #e0e0e0;
+}
+
+#data-table {
+    margin-top: 20px;
+}
+
+#data-table h2 {
+    margin-top: 0;
+}
+
+#data-table{
+    display: flex;
+    flex-direction: column;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+#tableList {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+#tableList li{
+    flex: 0 0 calc(33.33% - 20px);
+}
+
+table th,
+table td {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #ccc;
+}
+
+table th {
+    background-color: #f5f5f5;
+    font-weight: bold;
+}
+
+.pagination {
+    margin-top: 20px;
+    text-align: center;
+    display: flex;
+    width: 300px;
+    overflow-x: auto;
+    align-self: center;
+}
+
+.pagination a {
+    display: inline-block;
+    padding: 8px 12px;
+    background-color: #fff;
+    color: #333;
+    text-decoration: none;
+    border-radius: 4px;
+    transition: background-color 0.3s ease;
+    margin: 0 5px;
+}
+
+.pagination a:hover {
+    background-color: #e0e0e0;
+}
+
+.pagination .active {
+    background-color: #333;
+    color: #fff;
+}
+
+.search-box {
+    margin-top: 10px;
+}
+.search-box input[type="text"] {
+    width: 200px;
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+#tableList li {
+    display: block; /* Ensure all items are initially visible */
+    margin-bottom: 5px; /* Add some spacing between items */
+}

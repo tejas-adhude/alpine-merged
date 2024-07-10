@@ -1,0 +1,2 @@
+-This folder can include the all the raw csv files.
+-The folder is default path for files created by am_scriptMerge

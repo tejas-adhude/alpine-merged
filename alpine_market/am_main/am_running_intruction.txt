@@ -1,0 +1,1 @@
+1. check the first that ltp and order book thread is running and ltp is getting set.

@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Database Index</title>
+    <link rel="icon" href="data:,">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='db_stylesheet.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Database Index</h1>
+        <nav id="db-names-ls">
+            <h2>Select a Database</h2>
+            <ul>
+                {% for db in db_names_ls %}
+                    <li><a href="/{{ db }}">{{ db }}</a></li>
+                {% endfor %}
+            </ul>
+        </nav>
+    </div>
+</body>
+</html>

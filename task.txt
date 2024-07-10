@@ -1,0 +1,4 @@
+-adding new script using same parameter , add the quantity
+-retriction of lot size while addong script
+-historic data loop 
+-neo ordr feed disconnect just after order place

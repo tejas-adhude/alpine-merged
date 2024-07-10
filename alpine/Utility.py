@@ -1,0 +1,347 @@
+import re
+
+class ConsoleColors:
+    # ANSI ESCAPE CODES FOR TEXT FORMATTING
+    RESET = "\033[0m"
+    BOLD = "\033[1m"
+    UNDERLINE = "\033[4m"
+    RED = "\033[91m"
+    GREEN = "\033[92m"
+    YELLOW = "\033[93m"
+    BLUE = "\033[94m"
+
+class Helper:
+
+    def GET_VARIABLE_PLACEHOLDER_NAMES(string:str):
+        placeholders = re.findall(r'\{([^}]*)\}', string)
+        return placeholders
+
+class MySqlSetupInfo:
+
+    INFO_DATABASE="ALPINE" # DATABASE NAME WHICH STORE ALL TABLES (EXCLUDING CANDLDEDATA)
+    CANDLE_DATA_DATABASE="CANDLEDATA" # DATABASE STORING ALL CANDLEDATA TABLES
+
+     # DICT OF ALL ALLOWED TABLE NAMES, AND THEIER QUERY,CHECK END OF CLASS
+    QUERY_TABLES={}
+
+    TRIGGERS=[] # LIST OF ALL VARIABLES OF TRIGGERS, CHECK END OF CLASS.
+    
+    # CREATE_SCRIPTINFO_TABLE
+    CREATE_SCRIPTINFO_TABLE_QUERY = """
+        CREATE TABLE SCRIPTINFO (
+            NEOTOKENID VARCHAR(50) UNIQUE,
+            KITETOKENID VARCHAR(50) UNIQUE,
+            SYMBOL VARCHAR(50) PRIMARY KEY,
+            SYMBOLDESC TEXT NOT NULL,
+            EXCHANGE ENUM('NSE','BSE') NOT NULL,
+            SEGMENT ENUM('IN','FO','EQ') NOT NULL,
+            STATUS ENUM('ACTIVE','INACTIVE') NOT NULL DEFAULT 'ACTIVE'
+        );
+    """
+
+    # CREATE_OPTIONINFO_TABLE
+    CREATE_OPTIONINFO_TABLE_QUERY = """
+        CREATE TABLE OPTIONINFO (
+            SYMBOL VARCHAR(50) NOT NULL PRIMARY KEY,
+            EXYEAR VARCHAR(2) NOT NULL,
+            EXMONNUM VARCHAR(1) NOT NULL,
+            EXMONALPHA ENUM('JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP','OCT','NOV','DEC','O','N','D') NOT NULL,
+            EXDATE VARCHAR(2) NOT NULL,
+            EXMONUSE ENUM('NUM', 'ALPHA') NOT NULL,
+            CONSTRAINT EXYEAR CHECK (EXYEAR BETWEEN '23' AND '99' AND EXYEAR NOT LIKE '%[^0-9]%'),
+            CONSTRAINT EXMONNUM CHECK (EXMONNUM BETWEEN '1' AND '9' AND EXMONNUM NOT LIKE '%[^0-9]%'),
+            CONSTRAINT EXDATE CHECK (EXDATE BETWEEN '1' AND '31' AND EXDATE NOT LIKE '%[^0-9]%')
+        );
+    """
+
+    # CREATE_APICREDENTIAL_TABLE
+    CREATE_APICREDENTIAL_TABLE_QUERY = """
+        CREATE TABLE APICREDENTIAL (
+            APINAME VARCHAR(50) PRIMARY KEY,
+            USERID VARCHAR(50),
+            PASSWORD VARCHAR(50),
+            MOBILENUMBER VARCHAR(13),
+            CONSUMERKEY VARCHAR(100),
+            CONSUMERSECRET VARCHAR(100),
+            ACCESSTOKEN TEXT,
+            ENCTOKEN TEXT,
+            VIEWAUTH TEXT,
+            SID VARCHAR(100),
+            RID VARCHAR(100),
+            HSSERVERID VARCHAR(100),
+            SESSAUTH TEXT
+        );
+    """
+
+    # CREATE_LTP_TABLE
+    CREATE_LTP_TABLE_QUERY = """
+        CREATE TABLE LTP (
+            NEOTOKENID VARCHAR(50) PRIMARY KEY,
+            LTP FLOAT,
+            LASTUPDATE TIMESTAMP,
+            FOREIGN KEY (NEOTOKENID) REFERENCES SCRIPTINFO(NEOTOKENID)
+        );
+    """
+
+    # CREATE_TIMEFRAMES_TABLE
+    CREATE_TIMEFRAMES_TABLE_QUERY = """
+        CREATE TABLE TIMEFRAMES (
+            INTERVALKEY VARCHAR(20) PRIMARY KEY,
+            INTERVALVALUE INT
+        );
+    """
+
+    # CREATE_TRADEREPORT_TABLE
+    CREATE_TRADEREPORT_TABLE_QUERY = """
+        CREATE TABLE IF NOT EXISTS `TRADEREPORT_{MONTH}_{DAY}_{YEAR}` (
+            ALPINETYPE VARCHAR(50),
+            SCSYMBOL VARCHAR(100),
+            TIMEFRAME  VARCHAR(50),
+            STATNAME VARCHAR(50),
+            QUANTITY INT,
+            BUYT DATETIME,
+            SCBUYP FLOAT,
+            SELLT DATETIME,
+            SCSELLP FLOAT,
+            SCPAL FLOAT,
+            SCHIGHP FLOAT,
+            SCPALH FLOAT,
+            SCLOWP FLOAT,
+            SCPALL FLOAT,
+            ISOPTION ENUM('Y', 'N'),
+            OPSYMBOL VARCHAR(100),
+            OPBUYP FLOAT,
+            OPSELLP FLOAT,
+            OPPAL FLOAT,
+            OPHIGHP FLOAT,
+            OPPALH FLOAT,
+            OPLOWP FLOAT,
+            OPPALL FLOAT
+        );
+    """
+
+    # CREATE_CANDLEDATA_TABLES
+    CREATE_CANDLEDATA_TABLES_QUERY = """
+        CREATE TABLE IF NOT EXISTS `{SYMBOL}_{ELE}` (
+            STARTDTIME DATETIME PRIMARY KEY,
+            OPEN VARCHAR(50),
+            HIGH VARCHAR(50),
+            LOW VARCHAR(50),
+            CLOSE VARCHAR(50)
+        );
+    """
+
+    CREATE_ACTIVETRADE_TABLE_QUERY="""CREATE TABLE ACTIVETRADE (
+            TRADEID INT AUTO_INCREMENT PRIMARY KEY,
+            ALPINETYPE VARCHAR(50),
+            SYMBOL VARCHAR(50),
+            TIMEFRAME  VARCHAR(50),
+            STATNAME VARCHAR(50),
+            QUANTITY INT,
+            BUYP FLOAT,
+            BUYT DATETIME,
+            TARGET FLOAT,
+            STOPLOSS FLOAT,
+            SELLP FLOAT,
+            SELLT DATETIME,
+            HIGHP FLOAT,
+            LOWP FLOAT
+        );
+    """
+
+    CREATE_ORDERBOOK_TABLE_QUERY="""
+        CREATE TABLE ORDERBOOK (
+            SYMBOL VARCHAR(50) NOT NULL,
+            ORDERNO VARCHAR(50) PRIMARY KEY,
+            STATUS VARCHAR(50) NOT NULL,
+            STATUSTIME TIMESTAMP
+        );
+    """
+
+    # AFTER_SCRIPTINFO_INSERT TRIGGER
+
+    AFTER_SCRIPTINFO_INSERT_TRIGGER = """
+        CREATE TRIGGER AFTER_SCRIPTINFO_INSERT
+        AFTER INSERT
+        ON SCRIPTINFO
+        FOR EACH ROW
+        BEGIN
+            IF NEW.STATUS = 'ACTIVE' THEN
+                INSERT INTO LTP (NEOTOKENID, LTP)
+                VALUES (NEW.NEOTOKENID, NULL)
+                ON DUPLICATE KEY UPDATE
+                    LTP = VALUES(LTP);
+            END IF;
+        END;
+    """
+
+    # AFTER_SCRIPTINFO_UPDATE TRIGGER
+    AFTER_SCRIPTINFO_UPDATE_TRIGGER = """
+        CREATE TRIGGER AFTER_SCRIPTINFO_UPDATE
+        AFTER UPDATE
+        ON SCRIPTINFO
+        FOR EACH ROW
+        BEGIN
+            IF NEW.STATUS = 'ACTIVE' THEN
+                INSERT INTO LTP (NEOTOKENID,  LTP)
+                VALUES (NEW.NEOTOKENID, NULL)
+                ON DUPLICATE KEY UPDATE
+                    LTP = VALUES(LTP);
+            END IF;
+
+            IF NEW.STATUS = 'INACTIVE' THEN
+                DELETE FROM LTP
+                WHERE NEOTOKENID = NEW.NEOTOKENID;
+            END IF;
+        END;
+    """
+
+    # AFTER_SCRIPTINFO_DELETE TRIGGER
+    AFTER_SCRIPTINFO_DELETE_TRIGGER = """
+        CREATE TRIGGER AFTER_SCRIPTINFO_DELETE
+        BEFORE DELETE
+        ON SCRIPTINFO
+        FOR EACH ROW
+        BEGIN
+            DELETE FROM LTP
+            WHERE NEOTOKENID = OLD.NEOTOKENID;
+        END;
+    """
+
+    # LTPLASTUPDATETIME TRIGGER
+    LTP_LAST_UPDATE_TIME_TRIGGER = """CREATE TRIGGER LTPLASTUPDATETIME
+        BEFORE UPDATE ON LTP
+        FOR EACH ROW
+        BEGIN
+            SET NEW.LASTUPDATE = CURRENT_TIMESTAMP;
+        END;
+    """
+
+    # ASSIGNING THE TRIGGERS TO A LIST FOR EASIER HANDLING
+    TRIGGERS = [AFTER_SCRIPTINFO_INSERT_TRIGGER, AFTER_SCRIPTINFO_UPDATE_TRIGGER, AFTER_SCRIPTINFO_DELETE_TRIGGER, LTP_LAST_UPDATE_TIME_TRIGGER]
+
+    QUERY_TABLES= {
+    "SCRIPTINFO":CREATE_SCRIPTINFO_TABLE_QUERY,
+    "OPTIONINFO":CREATE_OPTIONINFO_TABLE_QUERY,
+    "APICREDENTIAL":CREATE_APICREDENTIAL_TABLE_QUERY,
+    "LTP":CREATE_LTP_TABLE_QUERY,
+    "TIMEFRAMES":CREATE_TIMEFRAMES_TABLE_QUERY,
+    "TRADEREPORT":CREATE_TRADEREPORT_TABLE_QUERY,
+    "ACTIVETRADE":CREATE_ACTIVETRADE_TABLE_QUERY,
+    "ORDERBOOK":CREATE_ORDERBOOK_TABLE_QUERY
+    }
+
+class MySqlOperationsInfo:
+
+    SET_SCRIPT_INFO_QUERY = """
+        INSERT INTO SCRIPTINFO (SYMBOL,SYMBOLDESC, NEOTOKENID,KITETOKENID, EXCHANGE, SEGMENT, STATUS)
+        VALUES (%s, %s, %s, %s, %s, %s, %s)
+        ON DUPLICATE KEY UPDATE
+            KITETOKENID = VALUES(KITETOKENID),
+            NEOTOKENID = VALUES(NEOTOKENID),
+            SYMBOLDESC=VALUES(SYMBOLDESC),
+            EXCHANGE = VALUES(EXCHANGE),
+            SEGMENT = VALUES(SEGMENT),
+            STATUS = VALUES(STATUS)
+    """
+
+    GET_SCRIPT_INFO_QUERY = "SELECT * FROM SCRIPTINFO WHERE SYMBOL = %s;"
+
+    SET_OPTION_INFO_QUERY = """
+        INSERT INTO OPTIONINFO (symbol, exYear, exMonNum, exMonAlpha, exDate, exMonUse)
+        VALUES (%s, %s, %s, %s, %s, %s)
+        ON DUPLICATE KEY UPDATE
+            exYear = VALUES(exYear),
+            exMonNum = VALUES(exMonNum),
+            exMonAlpha = VALUES(exMonAlpha),
+            exDate = VALUES(exDate),
+            exMonUse = VALUES(exMonUse)
+    """
+
+    GET_OPTION_INFO_QUERY = "SELECT * FROM OPTIONINFO WHERE symbol = %s;"
+
+    SET_API_CREDENTIAL_QUERY = """
+        INSERT INTO APICREDENTIAL (apiName, userID, password, mobileNumber, consumerKey, consumerSecret, 
+                                   accessToken, enctoken, viewAuth, sid, rid, hsServerId, sessAuth)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        ON DUPLICATE KEY UPDATE
+            userID = VALUES(userID),
+            password = VALUES(password),
+            mobileNumber = VALUES(mobileNumber),
+            consumerKey = VALUES(consumerKey),
+            consumerSecret = VALUES(consumerSecret),
+            accessToken = VALUES(accessToken),
+            enctoken = VALUES(enctoken),
+            viewAuth = VALUES(viewAuth),
+            sid = VALUES(sid),
+            rid = VALUES(rid),
+            hsServerId = VALUES(hsServerId),
+            sessAuth = VALUES(sessAuth)
+    """
+
+    GET_API_CREDENTIAL_QUERY = "SELECT * FROM APICREDENTIAL WHERE apiName = %s;"
+
+    SET_LTP_QUERY = "UPDATE LTP SET ltp = %s WHERE NEOTOKENID = %s;"
+
+    GET_LTP_QUERY = "SELECT * FROM LTP WHERE NEOTOKENID = %s;"
+
+    SET_TIME_FRAMES_QUERY = """
+        INSERT INTO TIMEFRAMES (intervalKey, intervalValue)
+        VALUES (%s, %s)
+        ON DUPLICATE KEY UPDATE
+            intervalValue = VALUES(intervalValue)
+    """
+
+    GET_TIME_FRAMES_QUERY = "SELECT * FROM TIMEFRAMES;"
+
+    SET_TRADE_REPORT_QUERY = """
+        INSERT INTO `TRADEREPORT_{MONTH}_{DAY}_{YEAR}`
+        (alpineType,scSymbol,timeFrame, statName,quantity, buyT, scBuyp, sellT, scSellP, scPal, scHighP, scPalH, scLowP, scPalL, isOption, opSymbol, 
+        opBuyP, opSellP, opPal, opHighP, opPalH, opLowP, opPalL)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+    """
+
+    GET_TRADE_REPORT_QUERY = "SELECT * FROM `TRADEREPORT_{MONTH}_{DAY}_{YEAR}`;"
+
+    SET_CANDLE_DATA_QUERY="""INSERT INTO `{SCNAME}_{TIMEFRAME}`(STARTDTIME,OPEN,HIGH,LOW,CLOSE) VALUES (%s,%s,%s,%s,%s)
+    ON DUPLICATE KEY UPDATE
+        OPEN=VALUES(OPEN),
+        HIGH=VALUES(HIGH),
+        LOW=VALUES(LOW),
+        CLOSE=VALUES(CLOSE);"""
+
+    GET_CANDLEDATA_QUERY_WITHOUT_LIMIT="SELECT * FROM `{SCNAME}_{TIMEFRAME}` WHERE STARTDTIME >= '{FROMDATETIME}' AND STARTDTIME < '{TODATETIME}' ORDER BY STARTDTIME DESC;"
+
+    GET_CANDLEDATA_QUERY_WITH_LIMIT="SELECT * FROM `{SCNAME}_{TIMEFRAME}` WHERE STARTDTIME >= '{FROMDATETIME}' AND STARTDTIME < '{TODATETIME}' ORDER BY STARTDTIME DESC LIMIT {LIMIT};"
+
+    GET_ALL_CANDLEDATA_DATA_QUERY_WITHOUT_LIMIT="""
+        SELECT * FROM `{SCNAME}_{TIMEFRAME}` ORDER BY STARTDTIME DESC
+    """
+
+    GET_ALL_CANDLEDATA_DATA_QUERY_WITH_LIMIT="""
+        SELECT * FROM `{SCNAME}_{TIMEFRAME}` ORDER BY STARTDTIME DESC LIMIT {LIMIT};
+    """
+
+    ADD_NEW_ACTIVE_TRADE_QUERY="INSERT INTO ACTIVETRADE(SYMBOL) VALUES(%s)"
+
+    SET_ACTIVETRADE_VALUE_QUERY="UPDATE ACTIVETRADE SET {VALUETYPE} = %s WHERE TRADEID = %s"
+
+    CHECK_ACTICETRADE_ID_QUERY="SELECT * FROM ACTIVETRADE WHERE TRADEID = %s"
+
+    GET_ACTIVETRADE_VALUE_QUERY="SELECT {VALUETYPE} FROM ACTIVETRADE WHERE TRADEID = %s"
+
+    REMOVE_ACTIVETRADE_QUERY="DELETE FROM ACTIVETRADE WHERE TRADEID = %s"
+
+    ADD_ORDERID_QUERY="""INSERT INTO ORDERBOOK (SYMBOL, ORDERNO, STATUS) 
+                    VALUES (%s, %s, %s)
+                    ON DUPLICATE KEY UPDATE
+                    SYMBOL=VALUES(SYMBOL),
+                    ORDERNO=VALUES(ORDERNO),
+                    STATUS=VALUES(STATUS)
+                    """
+
+    UPDATE_ORDERID_STATUS_QUERY="UPDATE ORDERBOOK SET STATUS = %s WHERE ORDERNO = %s"
+
+    UPDATE_ORDERID_SYMBOL_QUERY="UPDATE ORDERBOOK SET SYMBOL = %s WHERE ORDERNO = %s"
+
+    GET_ORDERIDS_QUERY="SELECT * FROM ORDERBOOK"

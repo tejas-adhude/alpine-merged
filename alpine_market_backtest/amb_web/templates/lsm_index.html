@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Script Management</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='lsm_style.css') }}">
+    <!-- <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script> -->
+    <script src="{{ url_for('static', filename='socket.io.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='lsm_script.js') }}"></script>
+</head>
+<body>
+    <h1>Script Management</h1>
+    <div class="container">
+        <div class="left-container">
+            <div class="left-container-left">
+                <div class="response-container">
+                    <h2>Response</h2>
+                    <p id="response">{{RESPONSE}}</p>
+                </div>
+
+                <div class="form-container">
+                    <h2>Add Script</h2>
+                    <form id="addScriptForm" onsubmit="event.preventDefault(); addScript();">
+
+                        <div class="form-group">
+                            <label for="SYMBOL">SYMBOL:</label>
+                            <select id="SYMBOL" name="SYMBOL" onchange="updateOption()" required>
+                                {% for option in SYMBOL_OPTIONS %}
+                                    <option>{{ option }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="TIMEFRAME">TIMEFRAME:</label>
+                            <select id="TIMEFRAME" name="TIMEFRAME" required>
+                                {% for option in TIMEFRAME_OPTIONS %}
+                                    <option>{{ option }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="QUANTITY">QUANTITY:</label>
+                            <input type="number" id="QUANTITY" name="QUANTITY" min="1" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="STATNAME">STATNAME:</label>
+                            <select id="STATNAME" name="STATNAME" required>
+                                
+                            </select>
+                        </div>
+
+                        <button type="submit" class="btn">Add Script</button>
+                    </form>
+                </div>
+            </div>
+            <div class="left-container-right">
+                <div class="form-container">
+                    <h2>Delete Script</h2>
+                    <form id="deleteScriptForm" onsubmit="event.preventDefault(); deleteScript();">
+
+                        <div class="form-group">
+                            <label for="PROCESS_ID_D">PROCESS_ID:</label>
+                            <select id="PROCESS_ID_D" name="PROCESS_ID" required>
+                                {% for key in PROCESS_IDS %}
+                                    <option>{{ key }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <button type="submit" class="btn">Delete Script</button>
+                    </form>
+                </div>
+
+                <div class="form-container">
+                    <h2>Force Delete Script</h2>
+                    <form id="forceDeleteScriptForm" onsubmit="event.preventDefault(); forceDeleteScript();">
+
+                        <div class="form-group">
+                            <label for="PROCESS_ID_FD">PROCESS_ID:</label>
+                            <select id="PROCESS_ID_FD" name="PROCESS_ID" required>
+                                {% for key in PROCESS_IDS %}
+                                    <option>{{ key }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <button type="submit" class="btn">Force Delete Script</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="right-container">
+            <div>
+                <h2>Pending Script</h2>
+                <table border="1" id="PendingScriptTable">
+                    <thead>
+                        <tr>
+                            <th>MODE</th>
+                            <th>PROCESS_ID</th>
+                            <th>SYMBOL</th>
+                            <th>TIME_FRAME</th>
+                            <th>STAT_MODULE_NAME</th>
+                            <th>QUANTITY</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for data_dict in PENDING_SCRIPT_INFO %}
+                            <tr>
+                                <td>{{ data_dict['MODE'] }}</td>
+                                <td>{{ data_dict['VALUE']['SYMBOL'] }}</td>
+                                <td>{{ data_dict['VALUE']['TIME_FRAME'] }}</td>
+                                <td>{{ data_dict['VALUE']['STAT_MODULE_NAME'] }}</td>
+                                <td>{{ data_dict['VALUE']['QUANTITY'] }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div>
+                <h2>Active Script</h2>
+                <table border="1" id="scriptTable">
+                    <thead>
+                        <tr>
+                            <th>PROCESS_ID</th>
+                            <th>ISBUIED</th>
+                            <th>SYMBOL</th>
+                            <th>TIME_FRAME</th>
+                            <th>STAT_MODULE_NAME</th>
+                            <th>QUANTITY</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for data_dict in SCRIPT_INFO %}
+                            <tr>
+                                <td>{{ data_dict['PROCESS_ID'] }}</td>
+                                <td>{% if data_dict['PROCESS_ID'] in IS_BUIED %} &#10004; {% endif %}</td>
+                                <td>{{ data_dict['SYMBOL'] }}</td>
+                                <td>{{ data_dict['TIME_FRAME'] }}</td>
+                                <td>{{ data_dict['STAT_MODULE_NAME'] }}</td>
+                                <td>{{ data_dict['QUANTITY'] }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

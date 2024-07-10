@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Management</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='asc_style.css') }}">
+    <script src="{{ url_for('static', filename='asc_script.js') }}"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="left-container">
+            <h1>Data Management</h1>
+
+            <div class="form-container">
+                <h2>Add Data</h2>
+                <form action="/add" method="POST" onsubmit="return validateForm()">
+                    <div class="form-group">
+                        <label for="SYMBOL">SYMBOL:</label>
+                        <select id="SYMBOL" name="SYMBOL" onchange="updateOption()" required>
+                            {% for option in SYMBOL_OPTIONS %}
+                                <option>{{ option }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="TIMEFRAME">TIMEFRAME:</label>
+                        <select id="TIMEFRAME" name="TIMEFRAME" required>
+                            {% for option in TIMEFRAME_OPTIONS %}
+                                <option>{{ option }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="QUANTITY">QUANTITY:</label>
+                        <input type="number" id="QUANTITY" name="QUANTITY" min="1" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="STATNAME">STATNAME:</label>
+                        <select id="STATNAME" name="STATNAME" required>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn">Add Data</button>
+                </form>
+            </div>
+
+            <div class="form-container">
+                <h2>Delete Data</h2>
+                <form action="/delete" method="POST">
+                    <div class="form-group">
+                        <label for="COUNTKEY">KEY:</label>
+                        <select id="COUNTKEY" name="COUNTKEY" required>
+                            {% for key in COUNTKEY %}
+                                <option>{{ key }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn">Delete Data</button>
+                </form>
+            </div>
+
+            <div class="response-container">
+                <h2>Response</h2>
+                <p>{{ response|safe }}</p>
+            </div>
+
+            <div class="csv-container">
+                <form action="/convert_csv" method="POST">
+                    <button type="submit" class="btn">Convert Data to CSV</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="right-container">
+            <h2>Data</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Key</th>
+                        <th>SYMBOL</th>
+                        <th>TIME_FRAME</th>
+                        <th>STAT_MODULE_NAME</th>
+                        <th>QUANTITY</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for key, data_dict in data.items() %}
+                        <tr>
+                            <td>{{ key }}</td>
+                            <td>{{ data_dict['SYMBOL'] }}</td>
+                            <td>{{ data_dict['TIME_FRAME'] }}</td>
+                            <td>{{ data_dict['STAT_MODULE_NAME'] }}</td>
+                            <td>{{ data_dict['QUANTITY'] }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

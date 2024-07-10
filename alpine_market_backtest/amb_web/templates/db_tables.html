@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Tables in {{ db }}</title>
+    <link rel="icon" href="data:,">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='db_stylesheet.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Tables in {{ db }}</h1>
+        <nav id="db-names-ls">
+            <h2>Select a Database</h2>
+            <ul>
+                {% for db in db_names_ls %}
+                    <li><a href="/{{ db }}">{{ db }}</a></li>
+                {% endfor %}
+            </ul>
+        </nav>
+
+        <div id="table-ls">
+            <h2>Tables</h2>
+            <!-- Search box for tables -->
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Search tables...">
+            </div>
+
+            <ul id="tableList">
+                {% for table in tables %}
+                    <li><a href="/{{ db }}/{{ table }}">{{ table }}</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+    <script src="{{ url_for('static', filename='db_tables_script.js') }}"></script>
+</body>
+</html>

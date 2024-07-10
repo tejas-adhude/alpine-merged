@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Table {{ table_name }} in {{ db }}</title>
+    <link rel="icon" href="data:,">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='db_stylesheet.css') }}">
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+    <script src="{{ url_for('static', filename='db_table_script.js') }}"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Table {{ table_name }} in {{ db }}</h1>
+        <nav id="db-names-ls">
+            <h2>Select a Database</h2>
+            <ul>
+                {% for db_name in db_names_ls %}
+                    <li><a href="/{{ db_name }}">{{ db_name }}</a></li>
+                {% endfor %}
+            </ul>
+        </nav>
+
+        <div id="data-table">
+            <input type="hidden" id="db" value="{{ db }}">
+            <input type="hidden" id="table_name" value="{{ table_name }}">
+            <table id="table-data">
+                <thead>
+                    <tr>
+                        {% for column in column_names %}
+                            <th>{{ column }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in data %}
+                        <tr>
+                            {% for key, value in row.items() %}
+                                <td>{{ value }}</td>
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <div class="pagination"></div>
+        </div>
+    </div>
+</body>
+</html>
