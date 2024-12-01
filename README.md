@@ -5,4 +5,4 @@ Developed an algorithmic trading system to autonomously execute stock trades bas
 
 • Integrated paper trading with live market deployment.
 
-## Adding docs will be added soon
+## Related docs will be added soon
